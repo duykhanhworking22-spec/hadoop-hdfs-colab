@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints*/
+
+# Hadoop temporary runtime files
+hadoop-3.5.0/
+hadoop-3.5.0.tar.gz
+hadoop_data/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
