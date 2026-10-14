@@ -92,11 +92,11 @@ git push -u origin main
 
 Sau khi đẩy mã nguồn lên GitHub, bạn hoặc bất kỳ ai đều có thể mở và chạy trực tiếp Notebook bằng đường dẫn sau:
 
-```text
-https://colab.research.google.com/github/<USERNAME>/<REPO_NAME>/blob/main/HDFS_Hadoop_Google_Colab.ipynb
-```
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/duykhanhworking22-spec/hadoop-hdfs-colab/blob/main/HDFS_Hadoop_Google_Colab.ipynb)
 
-*(Chỉ cần thay `<USERNAME>` và `<REPO_NAME>` bằng tên tài khoản và tên kho lưu trữ của bạn).*
+```text
+https://colab.research.google.com/github/duykhanhworking22-spec/hadoop-hdfs-colab/blob/main/HDFS_Hadoop_Google_Colab.ipynb
+```
 
 ---
 
