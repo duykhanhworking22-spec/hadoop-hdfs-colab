@@ -19,36 +19,32 @@ def make_cell(cell_type, source, execution_count=None):
 cells = []
 
 # Title & Overview
-cells.append(make_cell("markdown", """# 🐘 Thực Hành HDFS & Apache Hadoop Trên Google Colab
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com)
-![Hadoop Version](https://img.shields.io/badge/Hadoop-3.5.0-red.svg?logo=apachehadoop)
-![Java](https://img.shields.io/badge/OpenJDK-17%20%7C%2021-orange.svg?logo=openjdk)
-![Mode](https://img.shields.io/badge/Architecture-Pseudo--Distributed-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+cells.append(make_cell("markdown", """# Thực Hành HDFS và Apache Hadoop Trên Google Colab
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/duykhanhworking22-spec/hadoop-hdfs-colab/blob/main/HDFS_Hadoop_Google_Colab.ipynb)
 
 ---
 
-## 📌 Giới thiệu & Mục tiêu
-Notebook này cung cấp hướng dẫn thực hành hoàn chỉnh triển khai mô hình **Hadoop HDFS Pseudo-Distributed** (NameNode & DataNode chạy trên cùng 1 runtime) trực tiếp trên **Google Colab**.
+## Mục tiêu và phạm vi
+Notebook này cung cấp hướng dẫn thực hành triển khai mô hình **Hadoop HDFS Pseudo-Distributed** (NameNode và DataNode cùng chạy trên một runtime) trực tiếp trên nền tảng **Google Colab**.
 
-Sau bài lab này, bạn sẽ nắm vững:
-1. ⚙️ Cài đặt và cấu hình cụm Hadoop 3.5.0 trên môi trường Linux Ubuntu của Colab.
-2. 🚀 Khởi tạo và quản lý các Hadoop daemon (`NameNode`, `DataNode`) qua `hdfs --daemon`.
-3. 📁 Khai thác hệ thống tệp phân tán HDFS qua CLI (`mkdir`, `put`, `ls`, `cat`, `cp`, `mv`, `du`, `df`, `get`, `rm`).
-4. 🔍 Kiểm tra cấu trúc block vật lý và tình trạng toàn cụm (`hdfs fsck`, `dfsadmin -report`).
-5. 📊 Chạy ứng dụng tính toán **MapReduce WordCount** truyền thống.
-6. 🛒 **(Nâng cao)** Xử lý dữ liệu doanh thu E-Commerce với **Hadoop Streaming MapReduce bằng Python**.
+Nội dung bao gồm:
+1. Cài đặt và cấu hình cụm Hadoop 3.5.0 trên môi trường Linux Ubuntu của Colab.
+2. Khởi tạo và quản lý các Hadoop daemon (NameNode, DataNode) qua lệnh hdfs --daemon.
+3. Khai thác hệ thống tệp phân tán HDFS qua CLI (mkdir, put, ls, cat, head, tail, cp, mv, du, df, get, rm).
+4. Kiểm tra cấu trúc block vật lý và tình trạng toàn cụm (hdfs fsck, dfsadmin -report).
+5. Chạy ứng dụng tính toán MapReduce WordCount truyền thống.
+6. (Mở rộng) Xử lý dữ liệu doanh thu E-Commerce với Hadoop Streaming MapReduce bằng Python.
 
 ---
 
-> ⚠️ **LƯU Ý CỐT LÕI KHI CHẠY TRÊN GOOGLE COLAB**:
-> - **Môi trường tạm thời**: Runtime Colab sẽ giải phóng dữ liệu trong `/content` sau khi đóng phiên hoặc timeout.
-> - **Format NameNode duy nhất 1 lần**: Chỉ chạy lệnh format NameNode lúc khởi tạo ban đầu. Tuyệt đối không format lại khi đang làm việc để tránh lỗi `Cluster ID mismatch`.
+Lưu ý:
+- Môi trường Google Colab là tạm thời: Dữ liệu trong thư mục /content sẽ được làm mới khi ngắt kết nối phiên làm việc.
+- Format NameNode duy nhất một lần: Chỉ thực hiện lệnh format NameNode lúc khởi tạo ban đầu. Không format lại khi cụm đã có dữ liệu để tránh lỗi lệch Cluster ID.
 """))
 
 # Section A
-cells.append(make_cell("markdown", """## 🅰️ Phần A: Cài đặt Hadoop & Thiết lập Môi trường
-Trước tiên, kiểm tra môi trường Java có sẵn trên Colab, tải Hadoop 3.5.0 và thiết lập biến môi trường."""))
+cells.append(make_cell("markdown", """## Phần A: Cài đặt Hadoop và Thiết lập Môi trường
+Kiểm tra môi trường Java có sẵn trên Colab, tải bộ cài Hadoop 3.5.0 và thiết lập biến môi trường."""))
 
 cells.append(make_cell("code", """# Bước A1 & A2: Kiểm tra Java runtime
 !java -version"""))
@@ -61,7 +57,7 @@ cells.append(make_cell("code", """# Bước A4 & A5: Tải bộ cài Hadoop 3.5.
 !tar -xzf /content/hadoop-3.5.0.tar.gz -C /content
 !ls -ld /content/hadoop-3.5.0"""))
 
-cells.append(make_cell("code", """# Bước A6 & A7: Thiết lập biến môi trường động trong Notebook & hadoop-env.sh
+cells.append(make_cell("code", """# Bước A6 & A7: Thiết lập biến môi trường trong Notebook và hadoop-env.sh
 import os, subprocess
 
 # Xác định vị trí JAVA_HOME tự động trên máy Colab
@@ -74,29 +70,29 @@ os.environ["JAVA_HOME"] = java_home
 os.environ["HADOOP_HOME"] = "/content/hadoop-3.5.0"
 os.environ["PATH"] += ":/content/hadoop-3.5.0/bin:/content/hadoop-3.5.0/sbin"
 
-print("✅ JAVA_HOME   =", os.environ["JAVA_HOME"])
-print("✅ HADOOP_HOME =", os.environ["HADOOP_HOME"])
+print("JAVA_HOME   =", os.environ["JAVA_HOME"])
+print("HADOOP_HOME =", os.environ["HADOOP_HOME"])
 
-# Khai báo JAVA_HOME vào file cấu hình daemon hadoop-env.sh
+# Khai báo JAVA_HOME vào file cấu hình hadoop-env.sh
 hadoop_env = "/content/hadoop-3.5.0/etc/hadoop/hadoop-env.sh"
 with open(hadoop_env, "a") as f:
     f.write(f"\\nexport JAVA_HOME={os.environ['JAVA_HOME']}\\n")
 
-print("✅ Đã cập nhật hadoop-env.sh thành công!")"""))
+print("Da cap nhat hadoop-env.sh thanh cong!")"""))
 
 cells.append(make_cell("code", """# Bước A8: Kiểm tra Hadoop CLI
 !hadoop version"""))
 
 # Section B
-cells.append(make_cell("markdown", """## 🅱️ Phần B: Cấu hình HDFS Pseudo-Distributed
-Tạo thư mục dữ liệu cục bộ và ghi các tệp XML cấu hình (`core-site.xml`, `hdfs-site.xml`, `mapred-site.xml`)."""))
+cells.append(make_cell("markdown", """## Phần B: Cấu hình HDFS Pseudo-Distributed
+Tạo thư mục dữ liệu cục bộ và ghi các tệp XML cấu hình (core-site.xml, hdfs-site.xml, mapred-site.xml)."""))
 
 cells.append(make_cell("code", """# Bước B1: Tạo thư mục lưu metadata NameNode và block DataNode
 !mkdir -p /content/hadoop_data/namenode
 !mkdir -p /content/hadoop_data/datanode
 !ls -ld /content/hadoop_data/*"""))
 
-cells.append(make_cell("code", """# Bước B2: Cấu hình core-site.xml (Chỉ định NameNode lắng nghe tại localhost:9000)
+cells.append(make_cell("code", """# Bước B2: Cấu hình core-site.xml (Chỉ định NameNode tại localhost:9000)
 %%writefile /content/hadoop-3.5.0/etc/hadoop/core-site.xml
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
@@ -107,7 +103,7 @@ cells.append(make_cell("code", """# Bước B2: Cấu hình core-site.xml (Chỉ
     </property>
 </configuration>"""))
 
-cells.append(make_cell("code", """# Bước B3: Cấu hình hdfs-site.xml (Replication = 1, đường dẫn metadata và block)
+cells.append(make_cell("code", """# Bước B3: Cấu hình hdfs-site.xml (Replication = 1, đường dẫn lưu trữ metadata và block)
 %%writefile /content/hadoop-3.5.0/etc/hadoop/hdfs-site.xml
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
@@ -126,7 +122,7 @@ cells.append(make_cell("code", """# Bước B3: Cấu hình hdfs-site.xml (Repli
     </property>
 </configuration>"""))
 
-cells.append(make_cell("code", """# Bước B4: Cấu hình mapred-site.xml (Chạy MapReduce ở chế độ local runner)
+cells.append(make_cell("code", """# Bước B4: Cấu hình mapred-site.xml (Chạy MapReduce ở chế độ local)
 %%writefile /content/hadoop-3.5.0/etc/hadoop/mapred-site.xml
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
@@ -143,10 +139,10 @@ cells.append(make_cell("code", """# Bước B5: Kiểm tra các giá trị cấu
 !hadoop getconf -confKey mapreduce.framework.name"""))
 
 # Section C
-cells.append(make_cell("markdown", """## 🅲 Phần C: Khởi tạo & Khởi động Dịch vụ HDFS
-Tiến hành format NameNode (khởi tạo filesystem lần đầu) và khởi động 2 tiến trình daemon chính: **NameNode** và **DataNode**."""))
+cells.append(make_cell("markdown", """## Phần C: Khởi tạo và Khởi động Dịch vụ HDFS
+Format NameNode lần đầu và khởi động hai tiến trình daemon: NameNode và DataNode."""))
 
-cells.append(make_cell("code", """# Bước C1: Format NameNode (CHÚ Ý: CHỈ CHẠY 1 LẦN DUY NHẤT LÚC BẮT ĐẦU LAB)
+cells.append(make_cell("code", """# Bước C1: Format NameNode (Lưu ý: Chỉ chạy duy nhất một lần khi khởi tạo lab)
 !hdfs namenode -format -force"""))
 
 cells.append(make_cell("code", """# Bước C2, C3 & C4: Khởi động NameNode, DataNode và kiểm tra tiến trình Java
@@ -154,20 +150,20 @@ cells.append(make_cell("code", """# Bước C2, C3 & C4: Khởi động NameNode
 !hdfs --daemon start datanode
 !jps"""))
 
-cells.append(make_cell("code", """# Bước C5 & C6: Kiểm tra báo cáo DataNode & kết nối namespace HDFS
+cells.append(make_cell("code", """# Bước C5 & C6: Kiểm tra báo cáo DataNode và namespace HDFS
 !hdfs dfsadmin -report
 !hdfs dfs -ls /"""))
 
 # Section D
-cells.append(make_cell("markdown", """## 🅳 Phần D: Khai thác & Quản trị HDFS CLI
-Thực hành các thao tác làm việc với hệ thống tệp phân tán HDFS: tạo thư mục, upload, đọc, sao chép, di chuyển, tải về và xóa dữ liệu."""))
+cells.append(make_cell("markdown", """## Phần D: Khai thác và Quản trị HDFS CLI
+Thực hành các thao tác quản trị tệp tin và thư mục trên HDFS."""))
 
 cells.append(make_cell("code", """# Bước D1: Tạo cây thư mục làm việc trên HDFS
 !hdfs dfs -mkdir -p /user/student/input
 !hdfs dfs -mkdir -p /user/student/output
 !hdfs dfs -ls -R /user/student"""))
 
-cells.append(make_cell("code", """# Bước D2 & D3: Tạo file mẫu ở local Colab và đẩy lên HDFS (-put)
+cells.append(make_cell("code", """# Bước D2 & D3: Tạo tệp dữ liệu mẫu tại Colab và đưa lên HDFS (-put)
 !printf "Hanoi,1200\\nDanang,850\\nHCM,1700\\nHanoi,950\\n" > /content/sales.txt
 !cat /content/sales.txt
 
@@ -189,7 +185,7 @@ cells.append(make_cell("code", """# Bước D9: Kiểm tra dung lượng tệp (
 !hdfs dfs -du -h /user/student/input
 !hdfs dfs -df -h /"""))
 
-cells.append(make_cell("code", """# Bước D10: Tải tệp từ HDFS về lại máy local Colab (-get)
+cells.append(make_cell("code", """# Bước D10: Tải tệp từ HDFS về máy cục bộ Colab (-get)
 !rm -f /content/sales_downloaded.txt
 !hdfs dfs -get /user/student/input/sales.txt /content/sales_downloaded.txt
 !cat /content/sales_downloaded.txt"""))
@@ -199,8 +195,8 @@ cells.append(make_cell("code", """# Bước D11: Xóa tệp trên HDFS (-rm)
 !hdfs dfs -ls /user/student/input"""))
 
 # Section E
-cells.append(make_cell("markdown", """## 🅴 Phần E: Kiểm tra Block & Tình trạng HDFS
-Khảo sát cách HDFS quản lý block vật lý và tình trạng toàn vẹn dữ liệu."""))
+cells.append(make_cell("markdown", """## Phần E: Kiểm tra Block và Sức khỏe HDFS
+Khảo sát cách HDFS lưu trữ block vật lý và tình trạng toàn vẹn dữ liệu."""))
 
 cells.append(make_cell("code", """# Bước E1: Kiểm tra thông tin block của tệp sales.txt
 !hdfs fsck /user/student/input/sales.txt -files -blocks -locations"""))
@@ -210,7 +206,7 @@ cells.append(make_cell("code", """# Bước E2 & E3: Kiểm tra sức khỏe to�
 !hdfs dfsadmin -report"""))
 
 # Section F
-cells.append(make_cell("markdown", """## 🅵 Phần F: Thực thi MapReduce WordCount với Input/Output trên HDFS
+cells.append(make_cell("markdown", """## Phần F: Thực thi MapReduce WordCount với Input/Output trên HDFS
 Chạy bài toán MapReduce đếm tần suất từ mẫu bằng thư viện tích hợp sẵn của Hadoop."""))
 
 cells.append(make_cell("code", """# Bước F1 & F2: Tạo input văn bản đưa lên HDFS và dọn dẹp thư mục output cũ
@@ -218,7 +214,7 @@ cells.append(make_cell("code", """# Bước F1 & F2: Tạo input văn bản đư
 !hdfs dfs -mkdir -p /user/student/wordcount/input
 !hdfs dfs -put -f /content/words.txt /user/student/wordcount/input/
 
-# Xóa output cũ nếu có (bắt buộc vì MapReduce không ghi đè)
+# Xóa output cũ nếu có (bắt buộc vì MapReduce không ghi đè thư mục đã tồn tại)
 !hdfs dfs -rm -r -f /user/student/wordcount/output"""))
 
 cells.append(make_cell("code", """# Bước F3: Thực thi job MapReduce WordCount
@@ -228,8 +224,8 @@ cells.append(make_cell("code", """# Bước F4: Đọc kết quả WordCount t�
 !hdfs dfs -cat /user/student/wordcount/output/part-r-00000"""))
 
 # Section G: Advanced Streaming MapReduce with Python
-cells.append(make_cell("markdown", """## 🅶 Phần G (Mở Rộng): Hadoop Streaming MapReduce với Python & Dữ Liệu E-Commerce
-Thực hành bài toán phân tích giao dịch thực tế từ tệp `orders_2026_09.csv` để tổng hợp **tổng doanh thu theo ngành hàng (category)** cho các đơn hàng `SUCCESS`."""))
+cells.append(make_cell("markdown", """## Phần G (Mở rộng): Hadoop Streaming MapReduce với Python và Dữ liệu E-Commerce
+Phân tích giao dịch từ tệp orders_2026_09.csv để tổng hợp tổng doanh thu theo ngành hàng (category) với trạng thái SUCCESS."""))
 
 cells.append(make_cell("code", """# Bước G1: Tạo mapper_revenue.py
 %%writefile /content/mapper_revenue.py
@@ -271,8 +267,7 @@ for line in sys.stdin:
 if current_key is not None:
     print(f"{current_key}\\t{current_sum}")"""))
 
-cells.append(make_cell("code", """# Bước G3: Chuẩn bị dữ liệu orders_2026_09.csv & đưa lên HDFS
-# (Nếu bạn đã có file orders_2026_09.csv, upload lên Colab hoặc tạo dữ liệu mẫu bên dưới)
+cells.append(make_cell("code", """# Bước G3: Chuẩn bị dữ liệu orders_2026_09.csv và đưa lên HDFS
 import os
 
 if not os.path.exists("/content/orders_2026_09.csv"):
@@ -284,21 +279,21 @@ if not os.path.exists("/content/orders_2026_09.csv"):
         f.write("TX000004,2026-09-09,18:01:00,Hai Phong,Electronics,mobile,1,8846997,8846997,SUCCESS,4\\n")
         f.write("TX000005,2026-09-12,10:20:00,HCM,Beauty,web,2,500000,1000000,CANCELLED,1\\n")
         f.write("TX000006,2026-09-15,11:30:00,HCM,Grocery,mobile,3,100000,300000,SUCCESS,2\\n")
-    print("Đã tạo orders_2026_09.csv mẫu!")
+    print("Da tao orders_2026_09.csv mau!")
 
-# Đưa dữ liệu lên thư mục HDFS
+# Upload dữ liệu lên HDFS
 !hdfs dfs -mkdir -p /user/student/orders/input
 !hdfs dfs -put -f /content/orders_2026_09.csv /user/student/orders/input/
 !hdfs dfs -ls /user/student/orders/input"""))
 
 cells.append(make_cell("code", """# Bước G4: Chạy Hadoop Streaming MapReduce với Python
-# Phân quyền thực thi cho 2 script Python
+# Cấp quyền thực thi cho 2 script Python
 !chmod +x /content/mapper_revenue.py /content/reducer_revenue.py
 
-# Dọn dẹp thư mục output cũ
+# Dọn dẹp output cũ
 !hdfs dfs -rm -r -f /user/student/orders/output
 
-# Tìm file JAR hadoop-streaming
+# Xác định file JAR hadoop-streaming
 import glob
 streaming_jars = glob.glob("/content/hadoop-3.5.0/share/hadoop/tools/lib/hadoop-streaming-*.jar")
 streaming_jar = streaming_jars[0] if streaming_jars else ""
@@ -316,31 +311,31 @@ cells.append(make_cell("code", """# Bước G5: Xem kết quả thống kê doan
 !hdfs dfs -cat /user/student/orders/output/part-00000"""))
 
 # Section H
-cells.append(make_cell("markdown", """## 🅷 Phần H: Dừng và Khởi động lại HDFS
-Khi muốn tạm dừng phiên thực hành hoặc khởi động lại trong cùng 1 phiên runtime mà **không làm mất dữ liệu**."""))
+cells.append(make_cell("markdown", """## Phần H: Dừng và Khởi động lại HDFS
+Tạm dừng phiên làm việc hoặc khởi động lại trong cùng runtime mà không làm mất dữ liệu."""))
 
 cells.append(make_cell("code", """# Bước H1: Dừng các daemon
 !hdfs --daemon stop datanode
 !hdfs --daemon stop namenode
 !jps"""))
 
-cells.append(make_cell("code", """# Bước H2: Khởi động lại (LƯU Ý: KHÔNG ĐƯỢC CHẠY LỆNH FORMAT)
+cells.append(make_cell("code", """# Bước H2: Khởi động lại (Lưu ý: Không chạy lệnh format)
 !hdfs --daemon start namenode
 !hdfs --daemon start datanode
 !jps
 !hdfs dfs -ls /user/student"""))
 
 # Section I
-cells.append(make_cell("markdown", """## 🅸 Phần I: Bảng tra cứu xử lý lỗi (Troubleshooting)
+cells.append(make_cell("markdown", """## Phần I: Bảng tra cứu xử lý lỗi (Troubleshooting)
 
 | Tình trạng lỗi | Nguyên nhân | Cách khắc phục |
 | :--- | :--- | :--- |
-| `localhost:9000 Connection refused` | NameNode chưa chạy hoặc đã bị dừng | Chạy `!hdfs --daemon start namenode` rồi kiểm tra lại bằng `!jps` |
-| `!jps` chỉ có NameNode, không có DataNode | DataNode khởi động chậm hoặc gặp lỗi ghi block | Chạy `!hdfs --daemon start datanode` hoặc kiểm tra log bằng `!tail -n 80 /content/hadoop-3.5.0/logs/*datanode*.log` |
-| `Cluster ID mismatch` | Do chạy lại lệnh `hdfs namenode -format` khi DataNode đang giữ ID cũ | Dừng daemon, xóa sạch thư mục `/content/hadoop_data/*`, format lại từ đầu |
-| `Output directory already exists` | Thư mục đầu ra MapReduce đã tồn tại | Xóa thư mục output trước: `!hdfs dfs -rm -r -f <đường_dẫn_output>` |
-| `hadoop: command not found` | Mất biến môi trường khi restart runtime | Chạy lại Cell thiết lập `JAVA_HOME`, `HADOOP_HOME` và `PATH` ở Phần A |
-| `Cgroup memory/cpu controller path warning` | Cảnh báo tài nguyên container của Google Colab | Cảnh báo vô hại, không ảnh hưởng đến hoạt động của Hadoop |
+| localhost:9000 Connection refused | NameNode chưa chạy hoặc đã bị dừng | Chạy !hdfs --daemon start namenode rồi kiểm tra lại bằng !jps |
+| !jps chỉ có NameNode, không có DataNode | DataNode khởi động chậm hoặc lỗi ghi block | Chạy !hdfs --daemon start datanode hoặc kiểm tra log bằng !tail -n 80 /content/hadoop-3.5.0/logs/*datanode*.log |
+| Cluster ID mismatch | Chạy lại lệnh hdfs namenode -format khi DataNode đang giữ ID cũ | Dừng daemon, xóa sạch thư mục /content/hadoop_data/*, format lại từ đầu |
+| Output directory already exists | Thư mục đầu ra MapReduce đã tồn tại | Xóa thư mục output trước: !hdfs dfs -rm -r -f <đường_dẫn_output> |
+| hadoop: command not found | Mất biến môi trường khi restart runtime | Chạy lại Cell thiết lập JAVA_HOME, HADOOP_HOME và PATH ở Phần A |
+| Cgroup memory/cpu controller path warning | Cảnh báo tài nguyên container của Google Colab | Cảnh báo vô hại, không ảnh hưởng đến hoạt động của Hadoop |
 """))
 
 notebook = {
@@ -366,4 +361,4 @@ notebook = {
 with open("HDFS_Hadoop_Google_Colab.ipynb", "w", encoding="utf-8") as f:
     json.dump(notebook, f, ensure_ascii=False, indent=2)
 
-print("🎉 Đã tạo thành công tệp HDFS_Hadoop_Google_Colab.ipynb!")
+print("Da cap nhat xong tệp HDFS_Hadoop_Google_Colab.ipynb!")
